@@ -1,0 +1,9 @@
+{
+	"tabWidth": 4,
+	"useTabs": true,
+	"cursorOffset": -1,
+	"endOfLine": "lf",
+	"insertPragma": true,
+	"bracketSameLine": false,
+	"trailingComma": "es5"
+}
