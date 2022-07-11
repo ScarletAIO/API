@@ -1,0 +1,9 @@
+export enum PermissionFlags {
+    GUEST_PERMISSION = 0,
+    BOT_PERMISSION = 1,
+    OPEN_PERMISSION = 2,
+    BOTH_PERMISSION = 3,
+    ADMIN_PERMISSION = 3,
+    ALL_PERMISSION = 4,
+
+}
