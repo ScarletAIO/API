@@ -7,6 +7,7 @@ import path from "node:path";
 import nodemailer from "nodemailer";
 import Logger from "../../functions/logger";
 import { CreateUserDto } from '../dto/create.user.dto';
+import CacheManager from '../../common/services/CacheManager';
 
 const console = new Logger();
 
@@ -32,6 +33,7 @@ export default class DataHandler {
 			user: process.env.DB_USER,
 			password: process.env.DB_PASSWORD,
 			database: process.env.DB_NAME,
+			port: Number(process.env.DB_PORT),
 		});
 		return connection;
 	}
@@ -68,6 +70,7 @@ export default class DataHandler {
 			return true;
 		});
 		connection.end();
+		await new CacheManager().clear();
 		return true;
 	}
 
@@ -84,6 +87,7 @@ export default class DataHandler {
 		const query: string = `INSERT INTO \`user.table\` (age, name, password, email) VALUES (?, ?, ?, ?);`;
 		const result: any = await connection.query(query, [age, username, password, email]);
 		connection.end();
+		await new CacheManager().set(userData.id, userData);
 		return JSON.stringify(result[0]);
 	}
 
@@ -100,6 +104,10 @@ export default class DataHandler {
 		const query: string = `UPDATE \`user.table\` SET age = ?, name = ?, password = ?, email = ? WHERE id = ?;`;
 		const result: any = await connection.query(query, age, username, password, email, userId);
 		connection.end();
+		await new CacheManager().get(userId).then(async () => {
+			await new CacheManager().del(userId);
+			await new CacheManager().set(userId, userData);
+		});
 		return result[0];
 	}
 
@@ -109,16 +117,26 @@ export default class DataHandler {
 		const query: string = `DELETE FROM \`user.table\` WHERE id = ?;`;
 		const result: any = await connection.query(query, [userid]);
 		connection.end();
+		await new CacheManager().del(userid);
 		return result[0];
 	}
 
 	async getUserFromTable(userid: string): Promise<any> {
-		const connection: any = await this.createConnection();
-		// get the user data from the user.table
-		const query: string = `SELECT * FROM \`user.table\` WHERE id = ?;`;
-		const result: any = await connection.query(query, [userid]);
-		connection.end();
-		return result[0];
+		try {
+			const user = await new CacheManager().get(userid);
+			if (user) {
+				return user;
+			}
+			const connection: any = await this.createConnection();
+			// get the user data from the user.table
+			const query: string = `SELECT * FROM \`user.table\` WHERE id = ?;`;
+			const result: any = await connection.query(query, [userid]);
+			connection.end();
+			await new CacheManager().set(userid, result[0]);
+			return result[0];
+		} catch (error) {
+			console.error(error);
+		}
 	}
 
 	async getAllUsersFromTable(): Promise<any> {
