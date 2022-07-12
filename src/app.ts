@@ -26,6 +26,7 @@ routes.push(new UserRoutes(app));
 routes.push(new AuthRoutes(app));
 
 app.get('/', (req: Request, res: Response) => {
+    console.log(`GET / ${req.url} by ${req.ip}`);
     res.status(200).send(`Server running at port ${port}`);
 });
 
