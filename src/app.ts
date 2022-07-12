@@ -9,6 +9,7 @@ import Logger from "./functions/logger";
 import { CommonRoutesConfig } from "./common/common.routes.config";
 import { AuthRoutes } from "./auth/auth.routes.config";
 import { UserRoutes } from "./users/user.routes.config";
+import mysqlService from "./common/services/mysql.service";
 
 const app: express.Application = express();
 const server: http.Server = http.createServer(app);
@@ -31,6 +32,7 @@ app.get('/', (req: Request, res: Response) => {
 
 export default server.listen(port, () => {
     console.log(`Server running at port ${port}`);
+    mysqlService.connectWithRetry();
     routes.forEach(( route: CommonRoutesConfig ) => {
         debugLog(`Routes configured for ${route.getName()}.`);
     });
