@@ -9,7 +9,7 @@ export default class CacheManager {
     private redisClient: any;
     constructor() {
         this.redisClient = redis.createClient({
-            // @ts-expect-error
+            // @ts-ignore
             host: process.env.REDIS_HOST,
             port: process.env.REDIS_PORT,
         });
