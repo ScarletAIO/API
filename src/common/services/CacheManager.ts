@@ -1,5 +1,4 @@
 import * as redis from "redis";
-import { promisify } from "util";
 import Logger from '../../functions/logger';
 
 const console: Logger = new Logger();
@@ -24,43 +23,46 @@ export default class CacheManager {
             } catch (e) {
                 console.error(e);
             }
-        }, 1000 * 60);
+        }, 1000 * 60 * 60); // Ping every hour
     };
 
-    createConnection() {
+    createConnection(): redis.RedisClientType {
         const connection = this.redisClient;
         return connection;
-
     }
 
-    public async get(key:string): Promise<any> {
+    public async get(key:string): Promise<string> {
         return new Promise((resolve, reject) => {
-            this.redisClient.get(key).then(async (res) => {
-                if (res) {
-                    return resolve(res);
-                }
-            }).catch(err => {
-                reject(err);
-                console.error(err);
-            })
+            this.redisClient.connect().then(() => {
+                this.redisClient.get(`${key}`).then(async (res) => {
+                    if (res) {
+                        return resolve(res);
+                    }
+                }).catch(err => {
+                    reject(err);
+                    console.error(err);
+                })
+            });
         })
     }
 
-    public set(key: string, value: any, expire: number = 0): Promise<any> {
+    public set(key: string, value: any, expire: number = 0): Promise<string | null> {
         return new Promise((resolve, reject) => {
-            this.redisClient.set(key, value).then(async (res) => {
-                if (expire) {
-                    this.redisClient.expire(key, expire);
-                }
-                resolve(res);
-            }).catch(err => {
-                reject(err);
-                console.error(err);
-            })
+            this.redisClient.connect().then(() => {
+                this.redisClient.set(String(key), String(value)).then(async (res) => {
+                    if (expire) {
+                        this.redisClient.expire(key, expire);
+                    }
+                    resolve(res);
+                }).catch(err => {
+                    reject(err);
+                    console.error(err);
+                })
+            });
         });
     };
 
-    public del(key: string): Promise<any> {
+    public del(key: string): Promise<number> {
         return new Promise((resolve, reject) => {
             this.redisClient.del(key).then((res) => {
                 resolve(res);

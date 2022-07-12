@@ -1,4 +1,5 @@
 import mysql from 'mysql';
+import path from 'node:path';
 import Logger from '../../functions/logger';
 import DataHandler from '../../users/services/users.service';
 import CacheManager from './CacheManager';
@@ -21,7 +22,7 @@ export default new class MySQLService {
             }
             console.verbose('connected to mysql');
         });
-        new DataHandler().importTable("C:\\Users\\Phoenix Reid\\source\\apis\\Scarlet\\src\\users\\services\\users.schema.sql");
+        new DataHandler().importTable(path.resolve("src\\users\\services\\users.schema.sql"));
         console.verbose('connecting to redis');
         new CacheManager().createConnection().connect()
             .then(() => {

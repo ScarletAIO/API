@@ -32,8 +32,8 @@ app.get('/', (req: Request, res: Response) => {
 
 export default server.listen(port, () => {
     console.log(`Server running at port ${port}`);
-    mysqlService.connectWithRetry();
     routes.forEach(( route: CommonRoutesConfig ) => {
-        debugLog(`Routes configured for ${route.getName()}.`);
+        console.debug(`Routes configured for ${route.getName()}.`);
     });
+    mysqlService.connectWithRetry();
 });

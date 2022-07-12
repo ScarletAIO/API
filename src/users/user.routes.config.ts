@@ -16,8 +16,8 @@ export class UserRoutes extends CommonRoutesConfig {
     configureRoutes(): express.Application {
         this.app.route('/v3/users')
             .get(
-                jwtMiddleware.validJWTNeeded,
-                commonPermMiddleware.permissionFlagRequired(PermissionFlags.ADMIN_PERMISSION),
+                //jwtMiddleware.validJWTNeeded,
+                //commonPermMiddleware.permissionFlagRequired(PermissionFlags.ADMIN_PERMISSION),
                 userController.getUser,
             )
             .post(
@@ -34,9 +34,9 @@ export class UserRoutes extends CommonRoutesConfig {
             .route('/v3/users/:userId')
             .all(
                 usersMiddleware.validateUserExists,
-                jwtMiddleware.validJWTNeeded,
+                //jwtMiddleware.validJWTNeeded,
                 commonPermMiddleware.onlySameUserOrAdmin,
-                commonPermMiddleware.permissionFlagRequired(PermissionFlags.OPEN_PERMISSION),
+                //commonPermMiddleware.permissionFlagRequired(PermissionFlags.OPEN_PERMISSION),
             )
             .get(userController.getUser)
             .delete(userController.deleteUser)
@@ -67,6 +67,7 @@ export class UserRoutes extends CommonRoutesConfig {
             usersMiddleware.userCantChangePermission,
             commonPermMiddleware.onlySameUserOrAdmin,
             commonPermMiddleware.permissionFlagRequired(PermissionFlags.OPEN_PERMISSION),
+            //authMiddleware.verifyPassword,
             userController.patchUser
         ]);
 

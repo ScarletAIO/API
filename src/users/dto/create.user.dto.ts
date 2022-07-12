@@ -5,4 +5,5 @@ export interface CreateUserDto {
     age?: number;
     password: string;
     id: string;
+    token?: string;
 }
