@@ -15,10 +15,10 @@ CREATE TABLE IF NOT EXISTS `users.table` (
     username VARCHAR(255) NOT NULL,
     email VARCHAR(255) NOT NULL,
     password TEXT NOT NULL,
-    max_apps INT NOT NULL = 5,
+    max_apps INT(5) NOT NULL,
     last_login DATETIME NOT NULL,
     token text not null,
-    permission_level INT NOT NULL = 1,
+    permission_level INT NOT NULL,
     PRIMARY KEY (id),
     UNIQUE KEY (username),
     UNIQUE KEY (email)
@@ -28,7 +28,7 @@ CREATE TABLE IF NOT EXISTS `users.table` (
 CREATE TABLE IF NOT EXISTS `users.biography` (
     id INT NOT NULL AUTO_INCREMENT,
     user_id INT NOT NULL,
-    bio TEXT NOT NULL = "Hi there! I'm new here :D",
+    bio TEXT NOT NULL DEFAULT "Hi there! I'm new here :D",
     PRIMARY KEY (id),
     FOREIGN KEY (user_id) REFERENCES `users.table`(id)
 );

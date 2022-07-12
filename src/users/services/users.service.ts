@@ -2,6 +2,7 @@
 
 import mysql from "mysql";
 import fs from "node:fs/promises";
+const Importer = require("mysql-import");
 import crypto from "crypto";
 import path from "node:path";
 import nodemailer from "nodemailer";
@@ -10,6 +11,13 @@ import { CreateUserDto } from '../dto/create.user.dto';
 import CacheManager from '../../common/services/CacheManager';
 
 const console = new Logger();
+const importer = new Importer({
+	host: process.env.DB_HOST,
+	user: process.env.DB_USER,
+	password: process.env.DB_PASSWORD,
+	database: process.env.DB_NAME,
+	port: Number(process.env.DB_PORT)
+});
 
 const transporter = nodemailer.createTransport({
 	service: process.env.SERVICE,
@@ -27,14 +35,14 @@ const options = {
 }
 
 export default class DataHandler {
-	createConnection(): any {
-		const connection: any = mysql.createConnection({
+	createConnection(): mysql.Connection {
+		const connection: mysql.Connection = mysql.createConnection({
 			host: process.env.DB_HOST,
 			user: process.env.DB_USER,
 			password: process.env.DB_PASSWORD,
 			database: process.env.DB_NAME,
 			port: Number(process.env.DB_PORT)
-		});
+		})
 		return connection;
 	}
 
@@ -43,19 +51,16 @@ export default class DataHandler {
 	}
 
 	async importTable(file: string): Promise<boolean> {
-		const connection: any = await this.createConnection();
-		const sql: Promise<string> = fs.readFile(
-			path.join(__dirname, file),
-			"utf8",
-		);
-		connection.query(sql, (err: any, result: any) => {
-			if (err) {
-				console.error(err);
-			}
-			console.info(result[0]);
+		importer.import(file).then(() => {
+			var files = importer.getImported();
+			console.verbose(`Exported to DB: ${files}`);
 			return true;
+		}).catch((err: any) => {
+			console.error(err);
+			return false;
 		});
-		connection.end();
+
+		importer.disconnect(true);
 		return true;
 	}
 
@@ -185,7 +190,7 @@ export default class DataHandler {
 					if (err) throw err;
 					console.log(String(info));
 				});
-				let encrypted = cipher.update(result, "utf8", "hex");
+				let encrypted = cipher.update(String(result), "utf8", "hex");
 				encrypted += cipher.final("hex");
 				fs.writeFile(
 					path.resolve(
