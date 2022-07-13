@@ -10,10 +10,7 @@ import { CommonRoutesConfig } from "./common/common.routes.config";
 import { AuthRoutes } from "./auth/auth.routes.config";
 import { UserRoutes } from "./users/user.routes.config";
 import mysqlService from "./common/services/mysql.service";
-<<<<<<< HEAD
 import { ScarletRoutes } from './internal/scarlet.routes.config';
-=======
->>>>>>> 9e830135719368806e303ca469467c7088acc922
 
 const app: express.Application = express();
 const server: http.Server = http.createServer(app);
