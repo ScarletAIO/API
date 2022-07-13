@@ -1,108 +1,85 @@
-"use strict";
-import redis from "redis";
-import { promisify } from "util";
+import * as redis from "redis";
 import Logger from '../../functions/logger';
 
 const console: Logger = new Logger();
+const {
+    REDIS_HOST,
+    REDIS_PORT,
+    REDIS_PASS,
+    REDIS_USER
+} = process.env;
 
 export default class CacheManager {
-    private redisClient: any;
+    private redisClient:redis.RedisClientType;
+
     constructor() {
         this.redisClient = redis.createClient({
-            // @ts-expect-error
-            host: process.env?.REDIS_HOST,
-            port: process.env.REDIS_PORT,
+            url: `redis://${REDIS_USER}:${REDIS_PASS}@${REDIS_HOST}:${REDIS_PORT}`
         });
-
-        if (process.env.REDIS_PASSWORD && process.env.REDIS_PASSWORD.length > 0) {
-            this.redisClient.auth(process.env.REDIS_PASSWORD, (err: Error, res:Response) => {
-                if (err) {
-                    console.error(err);
-                }
-                console.verbose(res);
-            });
-        }
-
-        try {
-            this.redisClient.getAsync = promisify(this.redisClient.get).bind(this.redisClient);
-            this.redisClient.setAsync = promisify(this.redisClient.set).bind(this.redisClient);
-            this.redisClient.lpushAsync = promisify(this.redisClient.lpush).bind(this.redisClient);
-            this.redisClient.lrangeAsync = promisify(this.redisClient.lrange).bind(this.redisClient);
-            this.redisClient.llenAsync = promisify(this.redisClient.llen).bind(this.redisClient);
-            this.redisClient.lremAsync = promisify(this.redisClient.lrem).bind(this.redisClient);
-            this.redisClient.lsetAsync = promisify(this.redisClient.lset).bind(this.redisClient);
-            this.redisClient.hmsetAsync = promisify(this.redisClient.hmset).bind(this.redisClient);
-            this.redisClient.hmgetAsync = promisify(this.redisClient.hmget).bind(this.redisClient);
-            this.redisClient.clear = promisify(this.redisClient.del).bind(this.redisClient);
-        } catch(err) {
-            console.error(err);
-        }
-
-        this.redisClient.on("connected", () => {
-            console.log("Redis connected");
-        }).on("error", (err: Error) => {
-            console.error(err);
-        });
-
         setInterval(() => {
-            this.redisClient.ping((err: Error, res: Response) => {
-                if (err) {
+            try {
+                this.redisClient.ping();
+                console.verbose(`Pinging redis server at ${REDIS_HOST}:${REDIS_PORT}`);
+            } catch (e) {
+                console.error(e);
+            }
+        }, 1000 * 60 * 60); // Ping every hour
+    };
+
+    createConnection(): redis.RedisClientType {
+        const connection = this.redisClient;
+        return connection;
+    }
+
+    public async get(key:string): Promise<string> {
+        return new Promise((resolve, reject) => {
+            this.redisClient.connect().then(() => {
+                this.redisClient.get(`${key}`).then(async (res) => {
+                    if (res) {
+                        return resolve(res);
+                    }
+                }).catch(err => {
+                    reject(err);
                     console.error(err);
-                }
-                console.verbose(res);
+                })
             });
-        }, (1000*60*5));
-    };
+        })
+    }
 
-    public get(key: string): Promise<any> {
+    public set(key: string, value: any, expire: number = 0): Promise<string | null> {
         return new Promise((resolve, reject) => {
-            this.redisClient.get(key, (err, res) => {
-                if (err) {
-                    reject(err);
-                }
-                resolve(res);
-            });
-        });
-    };
-
-    public set(key: string, value: any, expire: number = 0): Promise<any> {
-        return new Promise((resolve, reject) => {
-            this.redisClient.set(key, value, (err, res) => {
-                if (err) {
-                    reject(err);
-                }
-                if (expire > 0) {
-                    this.redisClient.expire(key, expire, (err, res) => {
-                        if (err) {
-                            reject(err);
-                        }
-                        resolve(res);
-                    });
-                } else {
+            this.redisClient.connect().then(() => {
+                this.redisClient.set(String(key), String(value)).then(async (res) => {
+                    if (expire) {
+                        this.redisClient.expire(key, expire);
+                    }
                     resolve(res);
-                }
+                }).catch(err => {
+                    reject(err);
+                    console.error(err);
+                })
             });
         });
     };
 
-    public del(key: string): Promise<any> {
+    public del(key: string): Promise<number> {
         return new Promise((resolve, reject) => {
-            this.redisClient.del(key, (err, res) => {
-                if (err) {
-                    reject(err);
-                }
+            this.redisClient.del(key).then((res) => {
                 resolve(res);
+            }).catch(err => {
+                reject(err);
+                console.error(err);
             });
         });
     };
 
     public clear(): Promise<any> {
         return new Promise((resolve, reject) => {
-            this.redisClient.clear((err, res) => {
-                if (err) {
-                    reject(err);
-                }
-                resolve(res);
+            this.redisClient.flushAll().then(() => {
+                resolve(console.info("Redis cache cleared"));
+            }).catch(err => {
+                reject(err);
+                console.error(err);
             });
         });
     };

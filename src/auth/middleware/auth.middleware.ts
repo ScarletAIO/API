@@ -1,7 +1,7 @@
 import express from "express";
-import argon2 from 'argon2';
 import Logger from "../../functions/logger";
-import { User } from '../../users/daos/user.schema';
+import DataHandler from '../../users/services/users.service';
+import { escape } from "node:querystring";
 
 const console: Logger = new Logger();
 
@@ -11,20 +11,15 @@ export default new class AuthMiddleware {
         res: express.Response,
         next: express.NextFunction,
     ) {
-        const user: User = res.locals.user;
-        if (user) {
-            const passwordHash = user.password;
-            if (await argon2.verify(passwordHash, req.body.password)) {
-                req.body = {
-                    ...req.body,
-                    email: user.email,
-                    permissionFlags: user.permissionFlags,
-                };
+        console.log("verifyPassword");
+        (await new DataHandler().getUserFromTable(req.body.id))
+        .on("result", (user: any) => {
+            if (user.username == req.body.username && user.password == req.body.password) {
                 return next();
+            } else {
+                return res.status(400).send({ errors: ["Verification Failed. Incorrect credentials"] });
             }
-        }
-        console.log(`Failed Password attempt by ${req.ip} for account: ${user.email}`);
-        return res.status(400).send({ message: "Bad Request", errors: [{ msg: "Invalid password" }] });
+        })
     }
 
     async verifyIfBase64(input: any) {

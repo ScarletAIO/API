@@ -1,5 +1,8 @@
 import express from "express";
+import Logger from "../../functions/logger";
 import DataHandler from '../services/users.service';
+
+const console: Logger = new Logger();
 
 export default new class UsersMiddleware {
     async validateSameEmail(
@@ -8,7 +11,7 @@ export default new class UsersMiddleware {
         next: express.NextFunction
     ) {
         const user = req.body;
-        new DataHandler().getUserFromTable(req.params.id).then(
+        new DataHandler().getUserFromTable(req.params.userId).then(
             (u: any) => {
                 if (user.email === u.email) {
                     next();
@@ -25,7 +28,7 @@ export default new class UsersMiddleware {
         next: express.NextFunction
     ) {
         const user = req.body;
-        new DataHandler().getUserFromTable(req.params.id).then(
+        new DataHandler().getUserFromTable(req.params.userId).then(
             (u: any) => {
                 if (user.password === u.password) {
                     next();
@@ -66,15 +69,14 @@ export default new class UsersMiddleware {
         res: express.Response,
         next: express.NextFunction
     ) {
-        new DataHandler().getUserFromTable(req.params.id).then(
-            (u: any) => {
-                if (u) {
-                    next();
-                } else {
-                    res.status(400).send({ errors: ["Invalid User fetched."] });
-                }
+        (await new DataHandler().getUserFromTable(req.params.userId))
+        .on("result", (user: any) => {
+            if (user.id == req.params.userId) {
+                next();
+            } else {
+                res.status(400).send({ errors: ["User doesn't exist."] });
             }
-        );
+        });
     }
 
     async extractUserId(

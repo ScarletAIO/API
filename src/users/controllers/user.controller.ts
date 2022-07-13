@@ -18,14 +18,22 @@ export default new class UserController {
         })
     }
 
-    async getUser(req: express.Request, res: express.Response): Promise<any> {
-        console.log(`GET Request by ${req.ip} for user: ${req.params.id}`);
-        return new DataHandler().getUserFromTable(req.params.id).then((user: any) => {
-            return res.status(201).send({
-                message: "Getting User.",
-                user: user,
-            });
-        });
+    async getUser(req: express.Request, res: express.Response) {
+        console.warn(`GET Request by ${req.ip} for user: ${req.params.userId}`);
+        (await new DataHandler().getUserFromTable(req.params.userId))
+        .on("result", (user: any) => {
+            if (user.id == req.params.userId) {
+                if (!res.locals.user) {
+                    res.locals.user = user;
+                }
+                return res.status(200).send({
+                    message: "Fetched User.",
+                    user: user,
+                });
+            } else {
+                return res.status(400).send({ errors: ["User doesn't exist."] });
+            }
+        })
     }
 
     async createUser(req: express.Request, res: express.Response): Promise<any> {
@@ -35,16 +43,14 @@ export default new class UserController {
             ...req.body,
             id: shortid.generate(),
         }
-        return res.status(201).send({
-            message: "Creating User.",
-            user: user,
-        });
-        /*return new DataHandler().addUserToTable(user).then((user: any) => {
-            return res.status(201).send({
+        
+        new DataHandler().addUserToTable(user).then(() => {
+            res.locals.user = user;
+            return res.status(201).json({
                 message: "Creating User.",
                 user: user,
             });
-        });*/
+        });
     };
 
     async patchUser(req: express.Request, res: express.Response): Promise<any> {

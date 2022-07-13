@@ -1,27 +1,36 @@
 import mysql from 'mysql';
+import path from 'node:path';
 import Logger from '../../functions/logger';
 import DataHandler from '../../users/services/users.service';
+import CacheManager from './CacheManager';
 
 const console: Logger = new Logger();
 
 export default new class MySQLService {
-    constructor() {
-        this.connectWithRetry();
-    }
+    constructor() {}
 
     getMySQL() {
         return mysql;
     };
 
     connectWithRetry = () => {
-        console.info('connecting to mysql');
-        new DataHandler().createConnection()
-            .then(() => {
-                console.info('connected to mysql');
-            }).catch((err:any) => {
+        console.verbose('connecting to mysql');
+        new DataHandler().createConnection().connect((err) => {
+            if (err) {
                 console.error(err);
-                setTimeout(this.connectWithRetry, 5000);
-            }) ;
-        // -------------------------------------------------
+                setTimeout(new DataHandler().createConnection().connect, 5000);
+            }
+            console.verbose('connected to mysql');
+        });
+        new DataHandler().importTable(path.resolve("src\\users\\services\\users.schema.sql"));
+        console.verbose('connecting to redis');
+        new CacheManager().createConnection().connect()
+            .then(() => {
+                console.verbose('connected to redis');
+            }).catch(e => {
+                console.error(e);
+                setTimeout(new CacheManager().createConnection().connect, 5000);
+            });
+        return;
     };
 }

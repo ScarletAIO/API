@@ -1,7 +1,10 @@
 export interface PutUserDto {
-    username: string;
+    username?: string;
     fistName?: string
-    email: string;
-    password: string;
+    email?: string;
+    password?: string;
     permissionFlags?: number;
+    id?: string;
+    token?: string;
+    age?: number;
 }

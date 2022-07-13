@@ -1,15 +1,26 @@
 /** @format */
 
 import mysql from "mysql";
-import fs from "node:fs/promises";
+import fs from "node:fs";
+const Importer = require("mysql-import");
 import crypto from "crypto";
 import path from "node:path";
 import nodemailer from "nodemailer";
 import Logger from "../../functions/logger";
 import { CreateUserDto } from '../dto/create.user.dto';
 import CacheManager from '../../common/services/CacheManager';
+import argon2 from 'argon2';
+import { escape } from "node:querystring";
+import { PutUserDto } from '../dto/put.user.dto';
 
 const console = new Logger();
+const importer = new Importer({
+	host: process.env.DB_HOST,
+	user: process.env.DB_USER,
+	password: process.env.DB_PASSWORD,
+	database: process.env.DB_NAME,
+	port: Number(process.env.DB_PORT)
+});
 
 const transporter = nodemailer.createTransport({
 	service: process.env.SERVICE,
@@ -27,14 +38,14 @@ const options = {
 }
 
 export default class DataHandler {
-	createConnection(): any {
-		const connection: any = mysql.createConnection({
+	createConnection(): mysql.Connection {
+		const connection: mysql.Connection = mysql.createConnection({
 			host: process.env.DB_HOST,
 			user: process.env.DB_USER,
 			password: process.env.DB_PASSWORD,
 			database: process.env.DB_NAME,
-			port: Number(process.env.DB_PORT),
-		});
+			port: Number(process.env.DB_PORT)
+		})
 		return connection;
 	}
 
@@ -43,24 +54,21 @@ export default class DataHandler {
 	}
 
 	async importTable(file: string): Promise<boolean> {
-		const connection: any = await this.createConnection();
-		const sql: Promise<string> = fs.readFile(
-			path.join(__dirname, file),
-			"utf8",
-		);
-		connection.query(sql, (err: any, result: any) => {
-			if (err) {
-				console.error(err);
-			}
-			console.info(result[0]);
+		importer.import(file).then(() => {
+			var files = importer.getImported();
+			console.verbose(`Exported to DB: ${files}`);
 			return true;
+		}).catch((err: any) => {
+			console.error(err);
+			return false;
 		});
-		connection.end();
+
+		importer.disconnect(true);
 		return true;
 	}
 
 	async deleteUserTable(): Promise<boolean> {
-		const connection: any = await this.createConnection();
+		const connection = this.createConnection();
 		const sql: string = `DROP TABLE \`users.table\`;`;
 		connection.query(sql, (err: any, result: any) => {
 			if (err) {
@@ -70,7 +78,6 @@ export default class DataHandler {
 			return true;
 		});
 		connection.end();
-		await new CacheManager().clear();
 		return true;
 	}
 
@@ -80,69 +87,123 @@ export default class DataHandler {
 		password: string;
 		age: number;
 		id: string;
-	} | CreateUserDto): Promise<any> {
-		const connection: any = await this.createConnection();
-		const { age, username, password, email } = userData;
-		// append the user data to the user.table
-		const query: string = `INSERT INTO \`user.table\` (age, name, password, email) VALUES (?, ?, ?, ?);`;
-		const result: any = await connection.query(query, [age, username, password, email]);
-		connection.end();
-		await new CacheManager().set(userData.id, userData);
-		return JSON.stringify(result[0]);
-	}
-
-	async updateUserInTable(userData: {
-		username: string;
-		email: string;
-		password: string;
-		age: number;
-		id: string;
-	}  | CreateUserDto, userId: string): Promise<any> {
-		const connection: any = await this.createConnection();
-		const { age, username, password, email } = userData;
-		// update the user data in the user.table
-		const query: string = `UPDATE \`user.table\` SET age = ?, name = ?, password = ?, email = ? WHERE id = ?;`;
-		const result: any = await connection.query(query, age, username, password, email, userId);
-		connection.end();
-		await new CacheManager().get(userId).then(async () => {
-			await new CacheManager().del(userId);
-			await new CacheManager().set(userId, userData);
+	} | CreateUserDto): Promise<boolean> {
+		const connection = this.createConnection();
+		let { age, username, password, email, id } = userData;
+		password = await argon2.hash(String(password));
+		const query: string = `INSERT INTO \`users_table\` (age, username, password, email, id) VALUES (?, ?, ?, ?, ?);`;
+		connection.query(query, [age, username, password, email, id], (err) => {
+			if (err) {
+				console.error(err);
+			}
 		});
-		return result[0];
+		connection.end();
+		new CacheManager().set(userData.id, userData);
+		return true;
 	}
 
-	async deleteUserFromTable(userid: string): Promise<any> {
-		const connection: any = await this.createConnection();
+	/**
+	 * 
+	 * @param {PutUserDto} userData - user data to update
+	 * @param {string} userId - user id to update
+	 * @param {Array} action - ["update_user", "create_jwt"] - action to perform
+	 * @returns {boolean}
+	 */
+	async updateUserInTable(userData: PutUserDto, userId: string, action?: string): Promise<boolean> {
+		const connection = this.createConnection();
+		const { age, username, password, email } = userData;
+		let query: string;
+
+		switch (action)
+		{
+			case "update_user":
+				// update the user data in the user.table
+				query = `UPDATE \`users_table\` SET age = ?, name = ?, password = ?, email = ? WHERE id = ?;`;
+				connection.query(query, [age, username, password, email, userId], (err) => {
+					if (err) {
+						console.error(err);
+					}
+				});
+				connection.end();
+				new CacheManager().get(userId).then((user: any) => {
+					user.age = age;
+					user.username = username;
+					user.password = password;
+					user.email = email;
+					new CacheManager().del(userId);
+					new CacheManager().set(userId, user);
+				}).catch((err: any) => {
+					console.error(err);
+				});
+			return true;
+			
+			case "create_jwt":
+				const { token } = userData;
+				query = `UPDATE users_table SET token = '${String(token)}' WHERE id = '${String(userId)}'`;
+				connection.query(query, [token, userId], (err) => {
+					if (err) {
+						console.error(err);
+					}
+					console.warn(`Token updated for user ${userId}`);
+				}).on("result", (result: any) => {
+					console.verbose(result);
+				});
+				connection.end();
+				/**new CacheManager().get(userId).then((user: any) => {
+					user.token = token;
+					new CacheManager().del(userId);
+					new CacheManager().set(userId, user);
+				}).catch((err: any) => {
+					console.error(err);
+				});*/
+				return true;
+			default:
+				// update the user data in the user.table
+				query = `UPDATE \`users_table\` SET age = ?, name = ?, password = ?, email = ? WHERE id = ?;`;
+				connection.query(query, [age, username, password, email, userId], (err) => {
+					if (err) {
+						console.error(err);
+					}
+				});
+				connection.end();
+				new CacheManager().get(userId).then((user: any) => {
+					user.age = age;
+					user.username = username;
+					user.password = password;
+					user.email = email;
+					new CacheManager().del(userId);
+					new CacheManager().set(userId, user);
+				}).catch((err: any) => {
+					console.error(err);
+				});
+			return true;
+		}
+
+	}
+
+	async deleteUserFromTable(userid: string): Promise<mysql.Query> {
+		const connection = this.createConnection();
 		// delete the user data from the user.table
-		const query: string = `DELETE FROM \`user.table\` WHERE id = ?;`;
+		const query: string = `DELETE FROM \`users_table\` WHERE id = ?;`;
 		const result: any = await connection.query(query, [userid]);
 		connection.end();
-		await new CacheManager().del(userid);
+		new CacheManager().del(userid);
 		return result[0];
 	}
 
-	async getUserFromTable(userid: string): Promise<any> {
-		try {
-			const user = await new CacheManager().get(userid);
-			if (user) {
-				return user;
-			}
-			const connection: any = await this.createConnection();
-			// get the user data from the user.table
-			const query: string = `SELECT * FROM \`user.table\` WHERE id = ?;`;
-			const result: any = await connection.query(query, [userid]);
-			connection.end();
-			await new CacheManager().set(userid, result[0]);
-			return result[0];
-		} catch (error) {
-			console.error(error);
-		}
+	async getUserFromTable(userid: string): Promise<mysql.Query> {
+		const connection = this.createConnection();
+		let user:any = [];
+		return connection.query(`SELECT * FROM users_table WHERE id = "${escape(userid)}";`)
+			.on("result", (res) => {
+				return user.push(JSON.stringify(res));
+			});
 	}
 
-	async getAllUsersFromTable(): Promise<any> {
-		const connection: any = await this.createConnection();
+	async getAllUsersFromTable(): Promise<mysql.Query> {
+		const connection = this.createConnection();
 		// get all the user data from the user.table
-		const query: string = `SELECT * FROM \`user.table\`;`;
+		const query: string = `SELECT * FROM \`users_table\`;`;
 		const result: any = await connection.query(query);
 		connection.end();
 		return result[0];
@@ -151,19 +212,19 @@ export default class DataHandler {
 	async getUserFromTableByParam(
 		userData: any | {},
 		param: string,
-	): Promise<any> {
-		const connection: any = await this.createConnection();
+	): Promise<mysql.Query> {
+		const connection = this.createConnection();
 		// get the user data from the user.table
-		const query: string = `SELECT * FROM \`user.table\` WHERE ? = ?;`;
+		const query: string = `SELECT * FROM \`users_table\` WHERE ? = ?;`;
 		const result: any = await connection.query(query, [param, userData[param]]);
 		connection.end();
 		return result[0];
 	}
 
 	async encryptDatabase() {
-		const connection = await this.createConnection();
-		const query = "select * from \`user.table\`;";
-		const result = await connection.query(query);
+		const connection = this.createConnection();
+		const query = "select * from \`users_table\`;";
+		const result = connection.query(query);
 		connection.end();
 		crypto.generateKey(
 			"aes",
@@ -179,7 +240,7 @@ export default class DataHandler {
 					if (err) throw err;
 					console.log(String(info));
 				});
-				let encrypted = cipher.update(result, "utf8", "hex");
+				let encrypted = cipher.update(String(result), "utf8", "hex");
 				encrypted += cipher.final("hex");
 				fs.writeFile(
 					path.resolve(
@@ -188,10 +249,10 @@ export default class DataHandler {
 					encrypted,
 					{
 						flag: "a+",
-					},
-				).catch((err) => {
-					console.error(err);
-				});
+					}, () => {
+						console.log("Database encrypted");
+					}
+				);
 			},
 		);
 	}

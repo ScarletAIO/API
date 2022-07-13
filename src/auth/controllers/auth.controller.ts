@@ -3,11 +3,12 @@ import debug from "debug";
 import jwt from "jsonwebtoken";
 import crypto from "crypto";
 import Logger from "../../functions/logger";
+import DataHandler from '../../users/services/users.service';
 
 const log: debug.IDebugger = debug("app");
 const console: Logger = new Logger();
 
-const jwtSecret: string = process.env.JWT_SECRET || "";
+const jwtSecret: string = process.env.JWT_SECRET || "AHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHH";
 const tokenExpiresIn: number = Number(process.env.JWT_EXPIRES_IN || "3600");
 
 export default new class AuthController {
@@ -20,6 +21,7 @@ export default new class AuthController {
                 .digest("base64");
             req.body.refreshKey = salt.export();
             const token = jwt.sign(req.body, jwtSecret, { expiresIn: tokenExpiresIn });
+            (await new DataHandler().updateUserInTable({ token: String(token) }, req.body.id, "create_jwt"))
             return res.status(201).send({ accessToken: token, refreshToken: hash });
         } catch (e) {
             log("createJWT error: %O", e);
