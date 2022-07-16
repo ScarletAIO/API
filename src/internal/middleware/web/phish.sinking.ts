@@ -2,7 +2,7 @@ import CacheManager from '../../../common/services/CacheManager';
 export async function PhishingDetect(domain: string) {
     domain.toLowerCase();
     let detections: number = 0;
-    const res = await fetch(`https://phishing.sinking.yachts/all`, {
+    const res = await fetch(`https://phish.sinking.yachts/all`, {
         method: "GET",
         headers: {
             "X-Identity": "https://scarletai.xyz"
