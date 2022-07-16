@@ -22,7 +22,7 @@
                     return prettyPrintOne(newJsonString);
                 };
 
-                fetch('https://api.scarletai.xyz/routes/all', function(data) {
+                $.getJSON('https://api.scarletai.xyz/routes/all', function(data) {
                     console.log(data);
                     var jsonString = JSON.stringify(data, null, 4);
                     $('#jsonCode').html(highlight(jsonString, 'X-RateLimit'));
