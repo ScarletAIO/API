@@ -31,12 +31,12 @@ export default class CacheManager {
         return connection;
     }
 
-    public async get(key:string): Promise<string> {
+    public async get(key:string): Promise<Array<any>> {
         return new Promise((resolve, reject) => {
             this.redisClient.connect().then(() => {
                 this.redisClient.get(`${key}`).then(async (res) => {
                     if (res) {
-                        return resolve(res);
+                        return resolve([res]);
                     }
                 }).catch(err => {
                     reject(err);

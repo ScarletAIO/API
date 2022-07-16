@@ -12,7 +12,7 @@ export class AuthRoutes extends CommonRoutesConfig {
     }
 
     configureRoutes(): express.Application {
-        this.app.post(`/auth`, [
+        this.app.post(`/auth/token`, [
             BodyValidationMiddleware.verifyBodyFieldErrors,
             authMiddleware.verifyPassword,
             authController.createJwt,

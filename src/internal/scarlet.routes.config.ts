@@ -10,12 +10,19 @@ export class ScarletRoutes extends CommonRoutesConfig {
     }
     
     configureRoutes(): express.Application {
-        this.app.post(`/v3/scarlet/analyze`, [
+        this.app.post(`/v3/analyze/msg`, [
             body('text').isString().exists()
             .withMessage('Text must be a string'),
             bodyValMiddleware.verifyBodyFieldErrors,
             scarletController.analyzeSentiment,
         ]);
+
+        this.app.post(`/v3/analyze/link`, [
+            body('url').isString().exists()
+            .withMessage('URL must be a string'),
+            bodyValMiddleware.verifyBodyFieldErrors,
+            scarletController.analyzeLink,
+        ])
 
         return this.app;
     }

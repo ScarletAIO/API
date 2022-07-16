@@ -9,7 +9,7 @@ export default new class BodyValidationMiddleware {
     ) {
         const errors = validationResult(req);
         if (!errors.isEmpty()) {
-            res.status(400).send(errors.array());
+            res.status(400).send(errors.array()[1]);
         } else {
             next();
         }
