@@ -34,7 +34,7 @@ routes.push(new AuthRoutes(app));
 routes.push(new ScarletRoutes(app));
 
 app.get('/', (req: Request, res: Response) => {
-    res.status(200).sendFile("routes.html", { root: path.resolve("C:/Users/Phoenix Reid/source/apis/Scarlet/src/") });
+    res.status(200).sendFile("routes.html", { root: path.resolve(__dirname + "/../src/") });
 })
 .get("/routes", (req, res) => {
     res.status(200).send(new UserRoutes(app));
