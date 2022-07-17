@@ -23,7 +23,7 @@ export default class CacheManager {
             } catch (e) {
                 console.error(e);
             }
-        }, 1000 * 60 * 60); // Ping every hour
+        }, /**ping every 5 minutes */ 5000 * 60);
     };
 
     createConnection(): redis.RedisClientType {
