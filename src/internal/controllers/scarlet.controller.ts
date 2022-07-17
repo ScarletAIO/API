@@ -26,39 +26,48 @@ export default new class ScarletController {
     ): Promise<any> {
         console.warn(`Link analysis requested by ${req.ip}`);
         const phished = await PhishingDetect(req.body.domain);
-        const isMalware = await Malware.detect(req.body.domain);
 
-        if (phished.blocked && 
-            (
-                isMalware.stats.suspicious > 0 || 
-                isMalware.stats.malicious > 0
-            )
-        ) {
-            return res.status(201).send({
-                message: "Link analysis.",
-                input: req.body.domain,
-                phished: phished,
-                malware: isMalware.stats,
-                reporters: isMalware.results.forEach(av => {
-                    av.engine_name;
-                })
-            });
+        switch (this.isFile(req)) {
+            case true:
+                const isMalware = await Malware.detect(req.body.domain);
+                return res.status(201).send({
+                    message: "Link analysis.",
+                    input: req.body.domain,
+                    malware: isMalware.stats,
+
+                });
+            case false:
+                if (phished.blocked) {
+                    return res.status(201).send({
+                        message: "Link analysis.",
+                        input: req.body.domain,
+                        phished,
+                    });
+                } else {
+                    return res.status(201).send({
+                        message: "Link analysis.",
+                        phished
+                    });
+                }
+            default:
+                return res.status(201).send({
+                    message: "Link analysis.",
+                    input: req.body.domain,
+                    phished,
+                });
+            // -----------------------------------
         }
+    }
 
-        else if (phished.blocked && !(isMalware.stats.suspicious > 0 || isMalware.stats.malicious > 0))
-        {
-            return res.status(201).send({
-                message: "Link analysis.",
-                input: req.body.domain,
-                phished: phished,
-            });
+    private isFile(
+        req: express.Request,
+    ): boolean {
+        let fileExtensionRegex = /(?:\.([^.]+))?$/; // regex to get file extension
+        let fileExtension = fileExtensionRegex.test(req.body.domain)[1];
+        if (!fileExtension) {
+            return false;
         } else {
-            return res.status(201).send({
-                message: "Link analysis.",
-                input: req.body.domain,
-                phished: phished,
-                malware: isMalware.stats,
-            });
+            return true;
         }
     }
 }
