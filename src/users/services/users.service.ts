@@ -139,7 +139,7 @@ export default class DataHandler {
 			
 			case "create_jwt":
 				const { token } = userData;
-				query = `UPDATE users_table SET token = '${String(token)}' WHERE id = '${String(userId)}'`;
+				query = `UPDATE users_table SET token = ? WHERE id = ?`;
 				connection.query(query, [token, userId], (err) => {
 					if (err) {
 						console.error(err);
@@ -194,7 +194,7 @@ export default class DataHandler {
 	async getUserFromTable(userid: string): Promise<mysql.Query> {
 		const connection = this.createConnection();
 		let user:any = [];
-		return connection.query(`SELECT * FROM users_table WHERE id = "${escape(userid)}";`)
+		return connection.query(`SELECT * FROM users_table WHERE id = ?;`, [userid])
 			.on("result", (res) => {
 				return user.push(JSON.stringify(res));
 			});
