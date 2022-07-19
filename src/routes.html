@@ -29,25 +29,36 @@
             background-color: #f5f5f5;
         }
     </style>
+    <script src="https://code.jquery.com/jquery-3.6.0.slim.min.js" integrity="sha256-u7e5khyithlIdTpu22PHhENmPcRdFiHRjhAuHcs05RI=" crossorigin="anonymous"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/prettify/r224/prettify.min.css" integrity="sha512-PW9BfYtoXV6XYb/4FTkBoJEBM92TrGk7N324cCmF5i2dY02YvBg6ZPEAnSOZ5i2/nGPbsYFQwVzDxVVoWEKWww==" crossorigin="anonymous" referrerpolicy="no-referrer" />
     <script src="https://cdnjs.cloudflare.com/ajax/libs/prettify/r298/prettify.min.js" integrity="sha512-/9uQgrROuVyGVQMh4f61rF2MTLjDVN+tFGn20kq66J+kTZu/q83X8oJ6i4I9MCl3psbB5ByQfIwtZcHDHc2ngQ==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
-    <script src="https://code.jquery.com/jquery-3.6.0.slim.min.js" integrity="sha256-u7e5khyithlIdTpu22PHhENmPcRdFiHRjhAuHcs05RI=" crossorigin="anonymous"></script>
     
     <script>
-            $(function() {
-                var highlight = function(jsonString, searchFor) {
-                    var regex = new RegExp(searchFor, 'g');
-                    var highlighted = '<span class="highlighted">' + searchFor + '</span>';
-                    var newJsonString = jsonString.replace(regex, highlighted);
-                    return prettyPrintOne(newJsonString);
-                };
+        function docReady(fn) {
+            // see if DOM is already available
+            if (document.readyState === "complete" || document.readyState === "interactive") {
+                // call on next available tick
+                setTimeout(fn, 1);
+            } else {
+                document.addEventListener("DOMContentLoaded", fn);
+            }
+        } // end docReady()
 
-                $.getJSON('https://api.scarletai.xyz/routes/all', function(data) {
-                    console.log(data);
-                    var jsonString = JSON.stringify(data, null, 4);
-                    $('#jsonCode').html(highlight(jsonString, 'X-RateLimit'));
-                });
+        // executes when ready
+        docReady($(function() {
+            var highlight = function(jsonString, searchFor) {
+                var regex = new RegExp(searchFor, 'g');
+                var highlighted = '<span class="highlighted">' + searchFor + '</span>';
+                var newJsonString = jsonString.replace(regex, highlighted);
+                return prettyPrintOne(newJsonString);
+            };
+
+            $.getJSON('https://api.scarletai.xyz/routes/all', function(data) {
+                console.log(data);
+                var jsonString = JSON.stringify(data, null, 4);
+                $('#jsonCode').html(highlight(jsonString, 'X-RateLimit'));
             });
+        }));
     </script>
   </head>
 
