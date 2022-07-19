@@ -18,14 +18,20 @@ const server: http.Server = http.createServer(app);
 const port: number = Number(process.env.PORT || 3000);
 const routes: Array<CommonRoutesConfig> = [];
 const console: Logger = new Logger();
+import RateLimit from "express-rate-limit";
 
-app.use(cors());
+app.use(RateLimit({
+    windowMs: 1 * 60 * 1000, // 1 minute
+    max: 5, // limit each IP to 100 requests per windowMs
+}));
+    
 app.use(helmet({
     contentSecurityPolicy: false,
     crossOriginEmbedderPolicy: false,
     crossOriginResourcePolicy: false,
     frameguard: false,
 }));
+app.use(cors());
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
@@ -96,7 +102,7 @@ app.get('/', (req: Request, res: Response) => {
                         "password": "string",
                         "refreshKey": "string",
                         "headers": {
-                            "Authorization": "Bearer {access token}"
+                            "Authorization": "Bearer <access token>"
                         }
                     },
                     "description": "Get new token"

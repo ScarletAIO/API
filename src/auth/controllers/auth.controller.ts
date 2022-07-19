@@ -8,7 +8,8 @@ import DataHandler from '../../users/services/users.service';
 const log: debug.IDebugger = debug("app");
 const console: Logger = new Logger();
 
-const jwtSecret: string = process.env.JWT_SECRET || "AHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHH";
+// @ts-ignore
+const jwtSecret: string = process.env.JWT_SECRET;
 const tokenExpiresIn: number = Number(process.env.JWT_EXPIRES_IN || "3600");
 
 export default new class AuthController {
