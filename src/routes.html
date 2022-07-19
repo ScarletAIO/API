@@ -32,7 +32,11 @@
     <script src="https://code.jquery.com/jquery-3.6.0.slim.min.js" integrity="sha256-u7e5khyithlIdTpu22PHhENmPcRdFiHRjhAuHcs05RI=" crossorigin="anonymous"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/prettify/r224/prettify.min.css" integrity="sha512-PW9BfYtoXV6XYb/4FTkBoJEBM92TrGk7N324cCmF5i2dY02YvBg6ZPEAnSOZ5i2/nGPbsYFQwVzDxVVoWEKWww==" crossorigin="anonymous" referrerpolicy="no-referrer" />
     <script src="https://cdnjs.cloudflare.com/ajax/libs/prettify/r298/prettify.min.js" integrity="sha512-/9uQgrROuVyGVQMh4f61rF2MTLjDVN+tFGn20kq66J+kTZu/q83X8oJ6i4I9MCl3psbB5ByQfIwtZcHDHc2ngQ==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
-    
+  </head>
+
+  <body>
+    <h1>Available Routes</h1>
+    <pre id="jsonCode" class="prettyprint lang-json"></pre>
     <script>
         function docReady(fn) {
             // see if DOM is already available
@@ -60,12 +64,6 @@
             });
         }));
     </script>
-  </head>
-
-  <body>
-    <h1>Available Routes</h1>
-    <pre id="jsonCode" class="prettyprint lang-json"></pre>
-    
 </body>
 
 </html>
