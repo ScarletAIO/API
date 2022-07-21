@@ -25,7 +25,21 @@ export default new class ScarletController {
         res: express.Response,
     ): Promise<any> {
         console.warn(`Link analysis requested by ${req.ip} - ${req.body.url}`);
-        const phished = await PhishingDetect(req.body.url);
+        
+        await PhishingDetect(req.body.url).then((scan) => {
+            if (scan?.blocked) {
+                return res.status(201).send({
+                    message: "Link analysis.",
+                    input: req.body.url,
+                    scan,
+                });
+            } else {
+                return res.status(201).send({
+                    message: "Link analysis.",
+                    scan
+                });
+            }
+        });
 
         /**switch (this.isFile(req)) {
             /**case true:
@@ -57,19 +71,6 @@ export default new class ScarletController {
                 });
             // -----------------------------------
         }**/
-
-        if (phished.blocked) {
-            return res.status(201).send({
-                message: "Link analysis.",
-                input: req.body.url,
-                phished,
-            });
-        } else {
-            return res.status(201).send({
-                message: "Link analysis.",
-                phished
-            });
-        }
     }
 
     private isFile(

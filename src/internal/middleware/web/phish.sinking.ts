@@ -10,32 +10,24 @@ export async function PhishingDetect(domain: string) {
     });
      
     const listofphishing = await res.json();
-    let localEntries: any;
-    new CacheManager().set("sites", listofphishing);
-    new CacheManager().get("sites").then((sites) => {
-        localEntries = sites.find((x) => domain == x.domain || domain.endsWith(`.${x.domain}`));
-    })
+    console.log(res.json());
+    for (let phishing of listofphishing) {
+        if (phishing.domain === domain) {
+            detections++;
 
-    let fromDB = listofphishing.find((x:any) => domain == x.domain || domain.endsWith(`.${x.domain}`));
-
-    if (localEntries) {
-        detections += 1;
-        return {
-            detections: detections,
-            blocked: true,
-            reason: localEntries.reason || "No Reason provided",
-            domain: domain,
-        };
-    } else if (fromDB) {
-        return {
-            detections: detections,
-            blocked: true,
-            reason: "Checked externally from: [phish.sinking.yachts]",
-            domain: domain
+            return {
+                detections: detections,
+                blocked: true,
+                reason: "Checked externally from: [phish.sinking.yachts]",
+                domain: domain,
+            };
+        } else {
+            return {
+                detections: detections,
+                blocked: false,
+                reason: "Checked externally from: [phish.sinking.yachts]",
+                domain: domain,
+            };
         }
-    } else {
-        return {
-            blocked: false
-        }
-    }
+    };
 };
