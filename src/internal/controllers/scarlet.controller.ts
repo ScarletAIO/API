@@ -26,7 +26,7 @@ export default new class ScarletController {
     ): Promise<any> {
         console.warn(`Link analysis requested by ${req.ip} - ${req.body.url}`);
         
-        await PhishingDetect(req.body.url).then((scan) => {
+        return await PhishingDetect(req.body.url).then((scan) => {
             if (scan?.blocked) {
                 return res.status(201).send({
                     message: "Link analysis.",
