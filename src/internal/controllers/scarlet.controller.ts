@@ -25,14 +25,14 @@ export default new class ScarletController {
         res: express.Response,
     ): Promise<any> {
         console.warn(`Link analysis requested by ${req.ip}`);
-        const phished = await PhishingDetect(req.body.domain);
+        const phished = await PhishingDetect(req.body.url);
 
         switch (this.isFile(req)) {
             case true:
-                const isMalware = await Malware.detect(req.body.domain);
+                const isMalware = await Malware.detect(req.body.url);
                 return res.status(201).send({
                     message: "Link analysis.",
-                    input: req.body.domain,
+                    input: req.body.url,
                     malware: isMalware.stats,
 
                 });
@@ -40,7 +40,7 @@ export default new class ScarletController {
                 if (phished.blocked) {
                     return res.status(201).send({
                         message: "Link analysis.",
-                        input: req.body.domain,
+                        input: req.body.url,
                         phished,
                     });
                 } else {
@@ -52,7 +52,7 @@ export default new class ScarletController {
             default:
                 return res.status(201).send({
                     message: "Link analysis.",
-                    input: req.body.domain,
+                    input: req.body.url,
                     phished,
                 });
             // -----------------------------------
@@ -63,7 +63,7 @@ export default new class ScarletController {
         req: express.Request,
     ): boolean {
         let fileExtensionRegex = /(?:\.([^.]+))?$/; // regex to get file extension
-        let fileExtension = fileExtensionRegex.test(req.body.domain)[1];
+        let fileExtension = fileExtensionRegex.test(req.body.url)[1];
         if (!fileExtension) {
             return false;
         } else {
