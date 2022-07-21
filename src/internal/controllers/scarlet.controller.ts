@@ -24,11 +24,11 @@ export default new class ScarletController {
         req: express.Request,
         res: express.Response,
     ): Promise<any> {
-        console.warn(`Link analysis requested by ${req.ip}`);
+        console.warn(`Link analysis requested by ${req.ip} - ${req.body.url}`);
         const phished = await PhishingDetect(req.body.url);
 
-        switch (this.isFile(req)) {
-            case true:
+        /**switch (this.isFile(req)) {
+            /**case true:
                 const isMalware = await Malware.detect(req.body.url);
                 return res.status(201).send({
                     message: "Link analysis.",
@@ -56,6 +56,19 @@ export default new class ScarletController {
                     phished,
                 });
             // -----------------------------------
+        }**/
+
+        if (phished.blocked) {
+            return res.status(201).send({
+                message: "Link analysis.",
+                input: req.body.url,
+                phished,
+            });
+        } else {
+            return res.status(201).send({
+                message: "Link analysis.",
+                phished
+            });
         }
     }
 
