@@ -8,6 +8,8 @@ export async function PhishingDetect(domain: string) {
             "X-Identity": "https://scarletai.xyz"
         }
     });
+
+    console.log(res);
      
     const listofphishing = await res.json();
     if (res.status === 400) {
