@@ -82,10 +82,9 @@ export default new class UserController {
     }
 
     async deleteUser(req: express.Request, res: express.Response): Promise<any> {
-        return new DataHandler().deleteUserFromTable(req.params.userId).then((user: any) => {
+        return new DataHandler().deleteUserFromTable(req.params.userId).then(() => {
             return res.status(201).send({
-                message: "Deleting User.",
-                user: user,
+                message: "User Deleted."
             });
         }).catch((err: any) => {
             console.error(err);

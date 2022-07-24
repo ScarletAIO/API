@@ -23,11 +23,11 @@ export default new class ScarletController {
     async analyzeLink(
         req: express.Request,
         res: express.Response,
-    ): Promise<any> {
+    ) {
         console.warn(`Link analysis requested by ${req.ip} - ${req.body.url}`);
         
-        return await PhishingDetect(req.body.url).then((scan) => {
-            if (scan?.blocked) {
+        await PhishingDetect(req.body.url).then((scan) => {
+            if (scan.blocked) {
                 return res.status(201).send({
                     message: "Link analysis.",
                     input: req.body.url,

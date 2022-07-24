@@ -1,18 +1,15 @@
-import CacheManager from '../../../common/services/CacheManager';
+import axios from "axios";
 export async function PhishingDetect(domain: string) {
-    domain.toLowerCase();
     let detections: number = 0;
-    const res = await fetch(`https://phish.sinking.yachts/v2/check/${domain.replace(/^http(?s)\:\/\//gi, '')}`, {
-        method: "GET",
+    const res = await axios.get(`https://phish.sinking.yachts/v2/check/${domain}`, {
         headers: {
             "X-Identity": "https://scarletai.xyz"
-        }
+        },
+        timeout: 5000,
     });
-
-    console.log(res);
-     
-    const listofphishing = await res.json();
-    if (res.status === 400) {
+    
+    const listofphishing = await res.data;
+    if (res.status === 404) {
         return {
             blocked: false,
             detections: 0,

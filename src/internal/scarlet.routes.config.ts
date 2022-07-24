@@ -18,9 +18,8 @@ export class ScarletRoutes extends CommonRoutesConfig {
         ]);
 
         this.app.post(`/v3/analyze/link`, [
-            body('url').isString().exists()
-            .withMessage('URL must be a string'),
-            bodyValMiddleware.verifyBodyFieldErrors,
+           body('url').isString().exists().withMessage('URL must be a string'),
+           //bodyValMiddleware.verifyBodyFieldErrors,
             scarletController.analyzeLink,
         ])
 
