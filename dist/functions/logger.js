@@ -34,7 +34,7 @@ class Logger {
                 new winston_1.default.transports.File({
                     level: "verbose",
                     filename: "logs/logs.log",
-                    handleExceptions: true,
+                    handleExceptions: false,
                 }),
             ],
             format: winston_1.format.combine(winston_1.format.colorize(), winston_1.format.splat(), winston_1.format.errors({ stack: true }), winston_1.format.printf(({ service, message, level }) => {

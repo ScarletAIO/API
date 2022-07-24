@@ -134,11 +134,11 @@ app.get('/', (req, res) => {
         }
     ]);
 });
-exports.default = server.listen(port, () => {
+server.listen(port, () => {
     console.log(`Server running at port ${port}`);
     mysql_service_1.default.connectWithRetry();
-});
+}).setMaxListeners(0);
 process.setMaxListeners(0);
-process.on("warning", (warning) => {
+process.on("exit", (warning) => {
     return console.warn((String(warning)));
 });
