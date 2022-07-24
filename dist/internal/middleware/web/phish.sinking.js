@@ -15,9 +15,11 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.PhishingDetect = void 0;
 const axios_1 = __importDefault(require("axios"));
 function PhishingDetect(domain) {
+    domain = domain.replace(/^(https|http):\/\//, '');
+    console.log(domain);
     return __awaiter(this, void 0, void 0, function* () {
         let detections = 0;
-        return yield axios_1.default.get(`https://phish.sinking.yachts/v2/check/${domain}`, {
+        return yield axios_1.default.get(`https://phish.sinking.yachts/v2/check/${escape(domain)}`, {
             headers: {
                 "X-Identity": "https://scarletai.xyz"
             },
