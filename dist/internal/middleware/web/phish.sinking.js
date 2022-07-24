@@ -17,37 +17,46 @@ const axios_1 = __importDefault(require("axios"));
 function PhishingDetect(domain) {
     return __awaiter(this, void 0, void 0, function* () {
         let detections = 0;
-        const res = yield axios_1.default.get(`https://phish.sinking.yachts/v2/check/${domain}`, {
+        return yield axios_1.default.get(`https://phish.sinking.yachts/v2/check/${domain}`, {
             headers: {
                 "X-Identity": "https://scarletai.xyz"
             },
             timeout: 5000,
+        }).then(async (res) => {
+                const listofphishing = await res.data;
+                if (res.status === 404) {
+                    return {
+                        blocked: false,
+                        detections: 0,
+                        domain: domain,
+                        reason: "Not in Database"
+                    };
+                }
+                if (listofphishing === true) {
+                    return {
+                        detections: detections,
+                        blocked: true,
+                        reason: "Checked externally from: [phish.sinking.yachts]",
+                        domain: domain,
+                    };
+                }
+                else {
+                    return {
+                        detections: detections,
+                        blocked: false,
+                        reason: "Checked externally from: [phish.sinking.yachts]",
+                        domain: domain,
+                    };
+                }
+            })
+        .catch((err) => {
+            return {
+                detections: detections,
+                blocked: false,
+                reason: "Not Found - Checked externally from: [phish.sinking.yachts]",
+                domain: domain,
+            };
         });
-        const listofphishing = yield res.data;
-        if (res.status === 404) {
-            return {
-                blocked: false,
-                detections: 0,
-                domain: domain,
-                reason: "Not in Database"
-            };
-        }
-        if (listofphishing === true) {
-            return {
-                detections: detections,
-                blocked: true,
-                reason: "Checked externally from: [phish.sinking.yachts]",
-                domain: domain,
-            };
-        }
-        else {
-            return {
-                detections: detections,
-                blocked: false,
-                reason: "Checked externally from: [phish.sinking.yachts]",
-                domain: domain,
-            };
-        }
     });
 }
 exports.PhishingDetect = PhishingDetect;
