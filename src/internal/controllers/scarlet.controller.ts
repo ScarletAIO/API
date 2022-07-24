@@ -2,8 +2,6 @@ import express from 'express';
 import Logger from '../../functions/logger';
 import sentimood from '../middleware/sentimood';
 import { PhishingDetect } from '../middleware/web/phish.sinking';
-import Malware from '../middleware/web/malware.detect';
-
 const console: Logger = new Logger();
 
 export default new class ScarletController {
@@ -27,7 +25,7 @@ export default new class ScarletController {
         console.warn(`Link analysis requested by ${req.ip} - ${req.body.url}`);
         
         await PhishingDetect(req.body.url).then((scan) => {
-            if (scan.blocked) {
+            if (scan?.blocked) {
                 return res.status(201).send({
                     message: "Link analysis.",
                     input: req.body.url,

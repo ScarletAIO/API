@@ -10,7 +10,7 @@ export default class Logger {
                 new winston.transports.File({
                     level: "verbose",
                     filename: "logs/logs.log",
-                    handleExceptions: true,
+                    handleExceptions: false,
                 }),
             ],
             format: format.combine(

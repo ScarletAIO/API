@@ -16,14 +16,6 @@ export default class CacheManager {
         this.redisClient = redis.createClient({
             url: `redis://${REDIS_USER}:${REDIS_PASS}@${REDIS_HOST}:${REDIS_PORT}`
         });
-        setInterval(() => {
-            try {
-                this.redisClient.ping();
-                console.verbose(`Pinging redis server at ${REDIS_HOST}:${REDIS_PORT}`);
-            } catch (e) {
-                console.error(e);
-            }
-        }, /**ping every 5 minutes */ 5000 * 60);
     };
 
     createConnection(): redis.RedisClientType {
