@@ -4,7 +4,7 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "start": "tsc && node --trace-warnings ./dist/app.js"
+    "start": "node --trace-warnings ./dist/app.js"
   },
   "author": "",
   "license": "ISC",
