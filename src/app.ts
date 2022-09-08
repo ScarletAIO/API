@@ -141,7 +141,11 @@ app.get('/', (req: Request, res: Response) => {
 
 export default server.listen(port, () => {
     console.log(`Server running at port ${port}`);
-    mysqlService.connectWithRetry();
+    try {
+        mysqlService.connectWithRetry();
+    }catch (e) {
+        console.error(`Error: ${e}`);
+    }
 });
 
 process.setMaxListeners(0);

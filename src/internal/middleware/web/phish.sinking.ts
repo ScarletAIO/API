@@ -3,6 +3,7 @@ export async function PhishingDetect(domain: string) {
     domain = domain.toLowerCase();
     domain = domain.replace(/^(https|http)?:\/\//, "");
     let detections: number = 0;
+    domain = escape(domain);
     return await axios.get(`https://phish.sinking.yachts/v2/check/${domain}`, {
         headers: {
             "X-Identity": "https://scarletai.xyz"

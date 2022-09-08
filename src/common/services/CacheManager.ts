@@ -1,3 +1,4 @@
+import { threadId } from "node:worker_threads";
 import * as redis from "redis";
 import Logger from '../../functions/logger';
 
@@ -10,11 +11,11 @@ const {
 } = process.env;
 
 export default class CacheManager {
-    private redisClient:redis.RedisClientType;
+    public redisClient:redis.RedisClientType;
 
     constructor() {
         this.redisClient = redis.createClient({
-            url: `redis://${REDIS_USER}:${REDIS_PASS}@${REDIS_HOST}:${REDIS_PORT}`
+            url: `redis://default:HW01LmL8TgZCldcgywSkW7XG9F4QRVTc@redis-16609.c80.us-east-1-2.ec2.cloud.redislabs.com:16609`
         });
     };
 

@@ -1,6 +1,7 @@
 import express from 'express';
 import Logger from '../../functions/logger';
 import sentimood from '../middleware/sentimood';
+import is_nsfw from "../middleware/nsfw/functions";
 import { PhishingDetect } from '../middleware/web/phish.sinking';
 const console: Logger = new Logger();
 
@@ -69,6 +70,20 @@ export default new class ScarletController {
                 });
             // -----------------------------------
         }**/
+    }
+
+    public async analyzeImage(
+        req: express.Request,
+        res: express.Response,
+    ) {
+        console.warn(`Image analysis requested by ${req.ip}`);
+        let image = req.body.image || req.body.url;
+        let results = await is_nsfw.is_nsfw(image);
+        return res.status(200).send({
+            message: "Image analysis.",
+            input: image,
+            results: results,
+        })
     }
 
     private isFile(

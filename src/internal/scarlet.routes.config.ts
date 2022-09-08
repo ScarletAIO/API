@@ -21,7 +21,12 @@ export class ScarletRoutes extends CommonRoutesConfig {
            body('url').isString().exists().withMessage('URL must be a string'),
            //bodyValMiddleware.verifyBodyFieldErrors,
             scarletController.analyzeLink,
-        ])
+        ]);
+
+        this.app.post(`/v3/analyze/image`, [
+            body(('image' || 'url')).isString().exists().withMessage('Image must be a string'),
+            scarletController.analyzeImage,
+        ]);
 
         return this.app;
     }
