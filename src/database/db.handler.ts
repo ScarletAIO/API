@@ -1,4 +1,5 @@
 import { createConnection, Connection } from "mysql";
+import { saveError } from "../functions/logger";
 const fs = import("fs");
 const path = import("path");
 
@@ -109,5 +110,57 @@ export default new class DatabaseHandler {
         } else {
             return true;
         }
+    }
+
+
+    /// ----------------- GPT Methods -------------------- ///
+    public createGPTUser(user: string) {
+        return new Promise((resolve, reject) => {
+            this.query("INSERT INTO users (user) VALUES (?)", [user]).then((results) => {
+                return resolve(results);
+            }).catch((err) => {
+                return reject(err);
+            });
+        });
+    }
+
+    public getUserMessageHistory(user: string) {
+        return new Promise((resolve, reject) => {
+            this.query("SELECT * FROM users WHERE user = ?", [user]).then((results) => {
+                return resolve(results);
+            }).catch((err) => {
+                return reject(err);
+            });
+        });
+    }
+
+    public createUser(user: string) {
+        return new Promise((resolve, reject) => {
+            this.query("INSERT INTO users (user) VALUES (?)", [user]).then((results) => {
+                return resolve(results);
+            }).catch((err) => {
+                return reject(err);
+            });
+        });
+    }
+
+    public updateUserMessageHistory(user: string, messageHistory: string) {
+        this.query(this.sanitizeQuery("INSERT INTO users (user, messageHistory) values (?, ?)", [user, messageHistory]))
+        .then((results) => {
+            return results;
+        })
+        .catch((err) => {
+            saveError(`[DatabaseHandler] Error updating user message history: ${err}`);
+        });
+    }
+
+    public deleteUserMessageHistory(user: string) {
+        return new Promise((resolve, reject) => {
+            this.query("DELETE FROM users WHERE user = ?", [user]).then((results) => {
+                return resolve(results);
+            }).catch((err) => {
+                return reject(err);
+            });
+        });
     }
 }

@@ -25,7 +25,7 @@
     "express-jwt": "^7.7.5",
     "helmet": "^6.0.0",
     "mysql": "^2.18.1",
-    "mysql3": "^0.6.0"
+    "openai": "^3.0.0"
   },
   "devDependencies": {
     "@types/cors": "^2.8.12",
