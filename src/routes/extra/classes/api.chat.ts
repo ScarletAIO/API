@@ -1,6 +1,6 @@
 import { Configuration, OpenAIApi } from 'openai';
-import { saveError } from '../functions/logger';
-import dbHandler from '../database/db.handler';
+import { saveError } from '../../../functions/logger';
+import dbHandler from '../../../database/db.handler';
 
 export default new class GPTChatAPI {
     async processMessage(message: string, user: string): Promise<string> {
@@ -12,7 +12,7 @@ export default new class GPTChatAPI {
 
         const openai = new OpenAIApi(config);
 
-        let prompt = `The following is a conversation with an AI assistant. The assistant does whatever the user wants.\n\n${messageHistory}\nHuman:${message}\nAI:`
+        let prompt = `The following is a conversation with an AI assistant. The AI can assist with various requests.\n\n${messageHistory}\nHuman:${message}\nAI:`
 
         const response = await openai.createCompletion({
             model: "text-davinci-002",

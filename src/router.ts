@@ -1,36 +1,12 @@
-import { Application} from "express";
-import dbHandler from "./database/db.handler";
-import apiChat from "./routes/api.chat";
+import { Application } from "express";
 
 module.exports = (app: Application) => {
-    app.use("/", (req?, res?) => {
-        res.send("Hello World!");
-    });
-
-    app.post("/api/chat", async (req, res) => {
-        // TODO: Using the IP address is only temporary
-        const user = req.ip as string;
-        const message = req.body.message as string;
-
-        if (message) {
-            // check if they're a user
-            if (await dbHandler.getUserMessageHistory(user)) {
-                // they are a user
-                const response = await apiChat.processMessage(message, user);
-                res.status(200).send({
-                    message: response
-                });
-            } else {
-                await dbHandler.createGPTUser(user);
-                const response = await apiChat.processMessage(message, user);
-                res.status(200).send({
-                    message: response
-                });
-            }
-        } else {
-            res.status(400).send({
-                message: "No message provided"
-            });
-        }
-    });
+    // The home route:
+    app.use("/", require("./routes/home/base"));
+    // The user route:
+    app.use("/v2/users", require("./routes/user/user"));
+    // The chat route:
+    app.use("/v2/chat", require("./routes/extra/chat"));
+    // The analyze route:
+    app.use("/v2/analyze", require("./routes/analyze/analyzer"));
 };

@@ -1,0 +1,15 @@
+# Security Policy
+
+## Supported Versions
+
+Currently, until further notice, all versions of Scarlet are classed under the Vulnerability Assessment Support (VAS for short).
+This means that any and all reports for Security issues will be received and analysed, and patched (where applicable).
+
+| Version | Supported          |
+| ------- | ------------------ |
+| x.x.x (all)  | :white_check_mark: |
+
+## Reporting a Vulnerability
+
+If you have found an exploit (of any severity) for the API, AI, or Wrappers, then please open an issue using the `Security Report` template.
+Filing this report will ensure the issue gets the appropriate attention it deserves

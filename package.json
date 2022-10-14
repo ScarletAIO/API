@@ -18,6 +18,7 @@
   "homepage": "https://github.com/Tr1xtober/Felicity-Companion#readme",
   "dependencies": {
     "@types/mysql": "^2.15.21",
+    "api": "^4.5.2",
     "cors": "^2.8.5",
     "debug": "^4.3.4",
     "dotenv": "^16.0.3",
