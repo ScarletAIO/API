@@ -1,6 +1,6 @@
 {
   "name": "scarletai-api",
-  "version": "2.0.1",
+  "version": "2.0.2",
   "description": "Scarlet AI is designed to help support it's clients by implementing AI into various features such as malware detection, phishing detection, NSFW/Pornography detection and harassment prevention.",
   "main": "index.js",
   "scripts": {
