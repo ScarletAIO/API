@@ -1,10 +1,13 @@
 {
-  "name": "felicity-companion",
-  "version": "1.0.0",
-  "description": "First Hacktober Fest Project for the Trixtober team, an AI tool used to help users with various tasks!!",
+  "name": "scarletai-api",
+  "version": "2.0.1",
+  "description": "Scarlet AI is designed to help support it's clients by implementing AI into various features such as malware detection, phishing detection, NSFW/Pornography detection and harassment prevention.",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "release:major": "changelog -M && git add CHANGELOG.md && git commit -m 'updated CHANGELOG.md' && npm version major && git push origin && git push origin --tags",
+    "release:minor": "changelog -m && git add CHANGELOG.md && git commit -m 'updated CHANGELOG.md' && npm version minor && git push origin && git push origin --tags",
+    "release:patch": "changelog -p && git add CHANGELOG.md && git commit -m 'updated CHANGELOG.md' && npm version patch && git push origin && git push origin --tags"
   },
   "repository": {
     "type": "git",
