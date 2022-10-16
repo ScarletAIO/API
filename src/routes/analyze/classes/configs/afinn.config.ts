@@ -15,6 +15,7 @@ export const afinn = {
     "lol": 2,
     "lulz": 2,
     "lul": 2,
+    "frick": -2,
     "asswipe": -4,
     "shhhht": -4,
     "shhh": 0,
