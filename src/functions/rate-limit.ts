@@ -1,4 +1,4 @@
-export default class Ratelimit {
+export default new class Ratelimit {
     /**
      * @description Self-initialising ratelimit map and clearing the map every 5 minutes
      * @param timeToClear The time in milliseconds to clear the ratelimit map
