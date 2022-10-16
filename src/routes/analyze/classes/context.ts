@@ -1,6 +1,8 @@
 import { ContextDTO } from "../../../dtos/message.dto";
 import { removeStopWords } from "./functions/stop";
 import contextConfig from "./configs/context.config";
+import dbHandler from "../../../database/db.handler";
+import { saveLog } from "../../../functions/logger";
 
 export default new class Contexts {
     private contexts = contextConfig;
@@ -76,6 +78,7 @@ export default new class Contexts {
         };
         let output = {} as ContextDTO;
         const contexts = this.contexts[0];
+        let score:number = 0;
         // iterate through the key, value pairs in the contexts object
         for (const [key, value] of Object.entries(contexts)) {
             for (let i = 0; i < value.keywords.length; i++) {
@@ -84,19 +87,34 @@ export default new class Contexts {
                     // We have a match, next we need to confirm
                     // That it doesn't match other contexts
 
-                    // Check if the key's crossinterpretation has types in it and if it does, check if the text matches any of them
+                    // So we check if the key's crossinterpretation has types in it and if it does, 
+                    // check if the text matches any of them
                     if (value.crossinterpretation.types.length > 0) {
                         const CrossIntTypes = value.crossinterpretation.types;
                         for (let i = 0; i < CrossIntTypes.length; i++) {
                             if (CrossIntTypes[i] === key) {
-                                // We have a match, so we need to remove it from the array
-                                CrossIntTypes.splice(i, 1);
-                                // The above is temporary, I need to sum out 
-                                // how to detect if one context has higher
-                                // ranking than the other
-
-                                // TODO: Get context from prior messages sent from the IP?
-                                // ^ Does this need to be encrypted?
+                                // Now we get the total matches
+                                let totalMatches = 0;
+                                // First we iterate through all the keywords for every key in the contexts object
+                                for (const [key, value] of Object.entries(contexts)) {
+                                    for (let i = 0; i < value.keywords.length; i++) {
+                                        const element = value.keywords[i];
+                                        // now we check if the text matches any of the keywords
+                                        if (text.match(element)) {
+                                            // We have a match, so we need to add it to the total matches
+                                            totalMatches++;
+                                        } 
+                                        // Now we check if the text matches any of the crossinterpretation types
+                                        for (let i = 0; i < CrossIntTypes.length; i++) {
+                                            if (text.match(CrossIntTypes[i])) {
+                                                // We have a match, so we need to add it to the total matches
+                                                totalMatches++;
+                                            }
+                                        }
+                                    }
+                                }
+                                // Now we calculate the score
+                                score = totalMatches / Object.keys(contexts).length;
                             } else {
                                 return false;
                             }
@@ -104,9 +122,9 @@ export default new class Contexts {
                     } else {
                         output = {
                             detections: [key],
-                            confidence: 0.8, // TODO: Implement confidence
+                            confidence: score,
                             message_ref: text,
-                            checkId: null // I'll store this in a database later
+                            checkId: this.checkIdGenerator(text)
                         };
                     }
                 } else {
@@ -114,12 +132,26 @@ export default new class Contexts {
                         detections: "None Found",
                         confidence: 0,
                         message_ref: text,
-                        checkId: null
+                        checkId: this.checkIdGenerator(text)
                     };
                 }
             }
         }
 
         return output;
+    }
+
+    private checkIdGenerator(message:string): string {
+        let id = Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15);
+        id = Buffer.from(id).toString("base64");
+
+        // TODO: Save it into the DB
+        dbHandler.addCheckID(id, message).then((res) => {
+            saveLog(String(res));
+        }).catch((err) => {
+            saveLog(String(err));
+        });
+
+        return id;
     }
 }

@@ -36,11 +36,13 @@ module.exports = (app: Application) => {
                     }
                 })
             case "analyze": {
-                ":type": {
-                    "file": "A POST endpoint that checks whether a file is malicious or not",
-                    "link": "A POST endpoint that checks if the provided link is a phishing site or not",
-                    "text": "A POST endpoint that checks to see if a message is abusive, toxic, etc."
-                }
+                return res.status(200).send({
+                    ":type": {
+                        "file": "A POST endpoint that checks whether a file is malicious or not",
+                        "link": "A POST endpoint that checks if the provided link is a phishing site or not",
+                        "text": "A POST endpoint that checks to see if a message is abusive, toxic, etc."
+                    }
+                });
             }
         }
     });

@@ -112,6 +112,16 @@ export default new class DatabaseHandler {
         }
     }
 
+    public addCheckID(id: string, message: string) {
+        return new Promise((resolve, reject) => {
+            this.query("INSERT INTO checks (id, message) VALUES (?, ?)", [id, message]).then((results) => {
+                return resolve(results);
+            }).catch((err) => {
+                return reject(err);
+            });
+        });
+    }
+
 
     /// ----------------- GPT Methods -------------------- ///
     public createGPTUser(user: string) {
