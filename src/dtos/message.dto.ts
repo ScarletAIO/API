@@ -35,6 +35,13 @@ export interface VirusTotalDTO {
     }
 }
 
+export interface ContextDTO {
+    detections: string[] | string,
+    confidence: number,
+    message_ref: string,
+    checkId?: string |  number | null
+};
+
 export interface PhishingDTO {
     detections: string[] | number,
     blocked: boolean,
