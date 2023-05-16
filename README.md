@@ -1,4 +1,6 @@
 # Scarlet AI
+# ⚠️ ATTENTION ⚠️  
+This project has been deprecated and is no longer maintained.  
 ## Mission
 AI designed to help crackdown on virtual harassment that occurs across numerous media platforms, for example: Discord, Twitter, Facebook, and Instagram. <br>
 *Objectives:*
